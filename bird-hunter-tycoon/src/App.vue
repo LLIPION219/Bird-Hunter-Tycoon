@@ -1,82 +1,79 @@
 <template>
-  <div id="app" class="app-container">
-    <header class="main-header">
-      <h1 class="game-title">🦅 Bird Hunter Tycoon</h1>
-      <nav class="main-nav">
-        <router-link to="/" class="nav-link">Головна</router-link>
-        <router-link to="/hunt" class="nav-link">Полювання</router-link>
-        <router-link to="/inventory" class="nav-link">Інвентар</router-link>
-        <router-link to="/shop" class="nav-link">Магазин</router-link>
-        <router-link to="/market" class="nav-link">Ринок</router-link>
+  <div id="app">
+    <header class="header">
+      <h1>🦅 Bird Hunter Tycoon</h1>
+      <nav class="nav">
+        <router-link to="/">🏠 Головна</router-link>
+        <router-link to="/hunt">🎯 Полювання</router-link>
+        <router-link to="/shop">🛒 Магазин</router-link>
+        <router-link to="/inventory">🎒 Інвентар</router-link>
+        <router-link to="/market">💰 Ринок</router-link>
       </nav>
+      <div class="wallet">💵 {{ coins }} монет</div>
     </header>
 
-    <main class="main-content">
-      <router-view />
-    </main>
+    <router-view />
   </div>
 </template>
 
 <script>
 export default {
   name: 'App',
+  data() {
+    return {
+      coins: 0,
+    };
+  },
+  mounted() {
+    this.coins = Number(localStorage.getItem('coins') || 0);
+    window.addEventListener('coins-updated', this.updateCoins);
+  },
+  beforeUnmount() {
+    window.removeEventListener('coins-updated', this.updateCoins);
+  },
+  methods: {
+    updateCoins() {
+      this.coins = Number(localStorage.getItem('coins') || 0);
+    },
+  },
 };
 </script>
 
-<style>
-body {
-  margin: 0;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+<style scoped>
+#app {
+  font-family: 'Segoe UI', sans-serif;
   background-color: #f3f4f6;
   color: #333;
-}
-
-.app-container {
-  display: flex;
-  flex-direction: column;
   min-height: 100vh;
 }
-
-.main-header {
-  background-color: #1e3a8a;
-  padding: 20px;
+.header {
+  background: #1e3a8a;
   color: white;
+  padding: 15px 20px;
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
+  justify-content: space-between;
   align-items: center;
+}
+.nav {
+  display: flex;
   gap: 10px;
 }
-
-.game-title {
-  font-size: 2.2rem;
-  font-weight: bold;
-  margin: 0;
-}
-
-.main-nav {
-  display: flex;
-  gap: 15px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.nav-link {
-  color: #fff;
+.nav a {
+  color: white;
   text-decoration: none;
-  padding: 8px 16px;
-  border-radius: 8px;
-  background-color: #3b82f6;
-  transition: background-color 0.3s;
+  font-weight: bold;
+  padding: 6px 12px;
+  background: #2563eb;
+  border-radius: 5px;
 }
-
-.nav-link:hover {
-  background-color: #2563eb;
+.nav a:hover {
+  background: #3b82f6;
 }
-
-.main-content {
-  flex: 1;
-  padding: 20px;
-  max-width: 1200px;
-  margin: auto;
+.wallet {
+  background: #10b981;
+  padding: 6px 12px;
+  border-radius: 5px;
+  font-weight: bold;
 }
 </style>

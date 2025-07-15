@@ -26,10 +26,15 @@
     <div class="inventory-section">
       <h3>🪶 Шкури</h3>
       <div class="items-grid">
-        <div class="item-card" v-for="pelt in pelts" :key="pelt.id">
+        <div
+          class="item-card"
+          v-for="(pelt, index) in pelts"
+          :key="index"
+        >
           <h4>{{ pelt.type }}</h4>
           <p>Якість: {{ pelt.quality }}</p>
           <p>Ціна: {{ pelt.price }}₴</p>
+          <button @click="sellPelt(index)">💰 Зняти шкуру і продати</button>
         </div>
       </div>
     </div>
@@ -42,18 +47,38 @@ export default {
   data() {
     return {
       weapons: [
+        { id: 0, name: 'Саморобний пістолет', damage: 1 },
         { id: 1, name: 'Рушниця 12 калібру', damage: 2 },
         { id: 2, name: 'Снайперська гвинтівка', damage: 4 },
       ],
       knives: [
+        { id: 0, name: 'Кухонний ніж', suitableFor: 'малі птахи' },
         { id: 1, name: 'Мисливський ніж', suitableFor: 'великі птахи' },
         { id: 2, name: 'Філейний ніж', suitableFor: 'малі птахи' },
       ],
-      pelts: [
-        { id: 1, type: 'Голуб', quality: 'Висока', price: 25 },
-        { id: 2, type: 'Качка', quality: 'Середня', price: 15 },
-      ],
+      pelts: [],
     };
+  },
+  mounted() {
+    const storedPelts = JSON.parse(localStorage.getItem('pelts') || '[]');
+    this.pelts = storedPelts;
+  },
+  methods: {
+    sellPelt(index) {
+      const pelt = this.pelts[index];
+      if (pelt) {
+        // Додати гроші
+        let coins = Number(localStorage.getItem('coins') || '0');
+        coins += pelt.price;
+        localStorage.setItem('coins', coins);
+
+        // Видалити шкуру з інвентаря
+        this.pelts.splice(index, 1);
+        localStorage.setItem('pelts', JSON.stringify(this.pelts));
+
+        alert(`Продано: ${pelt.type} за ${pelt.price}₴`);
+      }
+    },
   },
 };
 </script>
@@ -94,6 +119,7 @@ export default {
   border-radius: 10px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   flex: 1 1 200px;
+  position: relative;
 }
 
 .item-card h4 {
@@ -104,5 +130,19 @@ export default {
 .item-card p {
   margin: 4px 0;
   color: #444;
+}
+
+.item-card button {
+  margin-top: 10px;
+  padding: 6px 12px;
+  background-color: #2ecc71;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.item-card button:hover {
+  background-color: #27ae60;
 }
 </style>
