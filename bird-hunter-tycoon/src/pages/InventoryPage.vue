@@ -1,7 +1,7 @@
 <template>
   <div class="inventory-page">
     <h2 class="page-title">🎒 Інвентар</h2>
-    <p class="subtitle">Тут ти можеш переглянути свою зброю, ножі та здобуті шкури.</p>
+    <p class="subtitle">Переглянь свою зброю, ножі, шкури і активуй спорядження.</p>
 
     <div class="inventory-section">
       <h3>🔫 Зброя</h3>
@@ -9,6 +9,9 @@
         <div class="item-card" v-for="weapon in weapons" :key="weapon.id">
           <h4>{{ weapon.name }}</h4>
           <p>Пошкодження: {{ weapon.damage }}</p>
+          <button @click="equipWeapon(weapon.id)">
+            {{ activeWeaponId === weapon.id ? '✅ Активовано' : 'Взяти' }}
+          </button>
         </div>
       </div>
     </div>
@@ -19,22 +22,20 @@
         <div class="item-card" v-for="knife in knives" :key="knife.id">
           <h4>{{ knife.name }}</h4>
           <p>Підходить для: {{ knife.suitableFor }}</p>
+          <button @click="equipKnife(knife.id)">
+            {{ activeKnifeId === knife.id ? '✅ Активовано' : 'Взяти' }}
+          </button>
         </div>
       </div>
     </div>
 
     <div class="inventory-section">
-      <h3>🪶 Шкури</h3>
+      <h3>🪶 Здобич</h3>
       <div class="items-grid">
-        <div
-          class="item-card"
-          v-for="(pelt, index) in pelts"
-          :key="index"
-        >
-          <h4>{{ pelt.type }}</h4>
-          <p>Якість: {{ pelt.quality }}</p>
-          <p>Ціна: {{ pelt.price }}₴</p>
-          <button @click="sellPelt(index)">💰 Зняти шкуру і продати</button>
+        <div class="item-card" v-for="(bird, i) in birds" :key="i">
+          <h4>{{ bird.type }}</h4>
+          <p>Якість: {{ bird.quality }}</p>
+          <button @click="skinBird(i)">Здерти шкуру</button>
         </div>
       </div>
     </div>
@@ -46,38 +47,41 @@ export default {
   name: 'InventoryPage',
   data() {
     return {
-      weapons: [
-        { id: 0, name: 'Саморобний пістолет', damage: 1 },
-        { id: 1, name: 'Рушниця 12 калібру', damage: 2 },
-        { id: 2, name: 'Снайперська гвинтівка', damage: 4 },
-      ],
-      knives: [
-        { id: 0, name: 'Кухонний ніж', suitableFor: 'малі птахи' },
-        { id: 1, name: 'Мисливський ніж', suitableFor: 'великі птахи' },
-        { id: 2, name: 'Філейний ніж', suitableFor: 'малі птахи' },
-      ],
-      pelts: [],
+      weapons: JSON.parse(localStorage.getItem('weapons') || '[]'),
+      knives: JSON.parse(localStorage.getItem('knives') || '[]'),
+      birds: JSON.parse(localStorage.getItem('birds') || '[]'),
+      activeWeaponId: Number(localStorage.getItem('activeWeaponId') || -1),
+      activeKnifeId: Number(localStorage.getItem('activeKnifeId') || -1),
     };
   },
-  mounted() {
-    const storedPelts = JSON.parse(localStorage.getItem('pelts') || '[]');
-    this.pelts = storedPelts;
-  },
   methods: {
-    sellPelt(index) {
-      const pelt = this.pelts[index];
-      if (pelt) {
-        // Додати гроші
-        let coins = Number(localStorage.getItem('coins') || '0');
-        coins += pelt.price;
-        localStorage.setItem('coins', coins);
+    equipWeapon(id) {
+      localStorage.setItem('activeWeaponId', id);
+      this.activeWeaponId = id;
+    },
+    equipKnife(id) {
+      localStorage.setItem('activeKnifeId', id);
+      this.activeKnifeId = id;
+    },
+    skinBird(index) {
+      const bird = this.birds[index];
+      const pelts = JSON.parse(localStorage.getItem('pelts') || '[]');
+      const quality = bird.quality;
+      let price = 10;
+      if (quality === 'Висока') price = 25;
+      else if (quality === 'Середня') price = 15;
+      else price = 5;
 
-        // Видалити шкуру з інвентаря
-        this.pelts.splice(index, 1);
-        localStorage.setItem('pelts', JSON.stringify(this.pelts));
+      pelts.push({
+        type: bird.type,
+        quality,
+        price,
+      });
 
-        alert(`Продано: ${pelt.type} за ${pelt.price}₴`);
-      }
+      this.birds.splice(index, 1);
+      localStorage.setItem('birds', JSON.stringify(this.birds));
+      localStorage.setItem('pelts', JSON.stringify(pelts));
+      alert(`Знято шкуру з ${bird.type}`);
     },
   },
 };
@@ -90,59 +94,39 @@ export default {
   margin: auto;
   color: #2c3e50;
 }
-
 .page-title {
-  font-size: 2.2rem;
+  font-size: 2rem;
   text-align: center;
-  margin-bottom: 10px;
 }
-
 .subtitle {
   text-align: center;
   margin-bottom: 30px;
-  color: #555;
 }
-
 .inventory-section {
   margin-bottom: 40px;
 }
-
 .items-grid {
   display: flex;
   flex-wrap: wrap;
   gap: 20px;
 }
-
 .item-card {
-  background-color: #ecf0f1;
+  background-color: #f0f4f8;
   padding: 15px;
   border-radius: 10px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-  flex: 1 1 200px;
-  position: relative;
+  flex: 1 1 220px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
-
-.item-card h4 {
-  margin: 0 0 8px;
-  font-size: 1.2rem;
-}
-
-.item-card p {
-  margin: 4px 0;
-  color: #444;
-}
-
 .item-card button {
   margin-top: 10px;
   padding: 6px 12px;
-  background-color: #2ecc71;
-  color: white;
+  background-color: #10b981;
   border: none;
-  border-radius: 6px;
+  border-radius: 5px;
+  color: white;
   cursor: pointer;
 }
-
 .item-card button:hover {
-  background-color: #27ae60;
+  background-color: #0e9e6e;
 }
 </style>

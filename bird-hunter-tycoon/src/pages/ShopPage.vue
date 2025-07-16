@@ -1,7 +1,7 @@
 <template>
   <div class="shop-page">
     <h2 class="page-title">🛒 Магазин</h2>
-    <p class="subtitle">Купуй зброю, ножі та боєприпаси для вдалого полювання!</p>
+    <p class="subtitle">Купуй зброю, ножі та боєприпаси для полювання!</p>
 
     <div class="shop-section">
       <h3>🔫 Зброя</h3>
@@ -10,7 +10,7 @@
           <h4>{{ weapon.name }}</h4>
           <p>Пошкодження: {{ weapon.damage }}</p>
           <p>Ціна: {{ weapon.price }}₴</p>
-          <button @click="buyItem(weapon)">Купити</button>
+          <button @click="buyItem(weapon, 'weapons')">Купити</button>
         </div>
       </div>
     </div>
@@ -22,13 +22,13 @@
           <h4>{{ knife.name }}</h4>
           <p>Для: {{ knife.suitableFor }}</p>
           <p>Ціна: {{ knife.price }}₴</p>
-          <button @click="buyItem(knife)">Купити</button>
+          <button @click="buyItem(knife, 'knives')">Купити</button>
         </div>
       </div>
     </div>
 
     <div class="shop-section">
-      <h3>💥 Боєприпаси</h3>
+      <h3>💥 Патрони</h3>
       <div class="items-grid">
         <div class="item-card">
           <h4>Патрони (10 шт)</h4>
@@ -56,17 +56,34 @@ export default {
     };
   },
   methods: {
-    buyItem(item) {
+    buyItem(item, type) {
+      const coins = Number(localStorage.getItem('coins') || 0);
+      if (coins < item.price) return alert('Недостатньо коштів!');
+      localStorage.setItem('coins', coins - item.price);
+
+      const list = JSON.parse(localStorage.getItem(type) || '[]');
+      list.push(item);
+      localStorage.setItem(type, JSON.stringify(list));
+
+      window.dispatchEvent(new Event('coins-updated'));
       alert(`Куплено: ${item.name} за ${item.price}₴`);
-      // Тут буде логіка додавання до інвентаря та зняття коштів
     },
     buyAmmo() {
+      const coins = Number(localStorage.getItem('coins') || 0);
+      if (coins < 10) return alert('Недостатньо коштів!');
+      localStorage.setItem('coins', coins - 10);
+
+      let ammo = Number(localStorage.getItem('ammo') || 0);
+      ammo += 10;
+      localStorage.setItem('ammo', ammo);
+
+      window.dispatchEvent(new Event('coins-updated'));
       alert('Куплено 10 патронів за 10₴');
-      // Додати до гаманця патрони
     },
   },
 };
 </script>
+
 
 <style scoped>
 .shop-page {

@@ -71,6 +71,17 @@ export default {
     }
 
     function shoot(event) {
+      let ammo = Number(localStorage.getItem('ammo') || '0');
+      if (ammo <= 0) {
+        alert('У вас немає патронів! Купіть їх у магазині.');
+        return;
+      }
+
+      // Витрати патронів
+      ammo -= 1;
+      localStorage.setItem('ammo', ammo);
+      window.dispatchEvent(new Event('ammo-updated'));
+
       const rect = canvas.value.getBoundingClientRect();
       const mx = event.clientX - rect.left;
       const my = event.clientY - rect.top;
@@ -95,6 +106,12 @@ export default {
     }
 
     onMounted(() => {
+      const ammo = Number(localStorage.getItem('ammo') || '0');
+      if (ammo <= 0) {
+        alert('У вас немає патронів для полювання!');
+        return;
+      }
+
       canvas.value.width = window.innerWidth;
       canvas.value.height = window.innerHeight * 0.8;
       ctx = canvas.value.getContext('2d');
