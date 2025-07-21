@@ -1,7 +1,7 @@
 <template>
   <div class="shop-page">
     <h2 class="page-title">🛒 Магазин</h2>
-    <p class="subtitle">Купуй зброю, ножі та боєприпаси для полювання!</p>
+    <p class="subtitle">Купуй зброю та боєприпаси для вдалого полювання!</p>
 
     <div class="shop-section">
       <h3>🔫 Зброя</h3>
@@ -10,30 +10,18 @@
           <h4>{{ weapon.name }}</h4>
           <p>Пошкодження: {{ weapon.damage }}</p>
           <p>Ціна: {{ weapon.price }}₴</p>
-          <button @click="buyItem(weapon, 'weapons')">Купити</button>
+          <button @click="buyItem(weapon)">Купити</button>
         </div>
       </div>
     </div>
 
     <div class="shop-section">
-      <h3>🔪 Ножі</h3>
+      <h3>💥 Боєприпаси</h3>
       <div class="items-grid">
-        <div class="item-card" v-for="knife in knivesForSale" :key="knife.id">
-          <h4>{{ knife.name }}</h4>
-          <p>Для: {{ knife.suitableFor }}</p>
-          <p>Ціна: {{ knife.price }}₴</p>
-          <button @click="buyItem(knife, 'knives')">Купити</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="shop-section">
-      <h3>💥 Патрони</h3>
-      <div class="items-grid">
-        <div class="item-card">
-          <h4>Патрони (10 шт)</h4>
-          <p>Ціна: 10₴</p>
-          <button @click="buyAmmo">Купити</button>
+        <div class="item-card" v-for="ammo in ammoTypes" :key="ammo.weaponId">
+          <h4>{{ ammo.label }}</h4>
+          <p>Ціна: {{ ammo.price }}₴</p>
+          <button @click="buyAmmo(ammo.weaponId, ammo.amount, ammo.price)">Купити</button>
         </div>
       </div>
     </div>
@@ -49,41 +37,56 @@ export default {
         { id: 1, name: 'Рушниця 12 калібру', damage: 2, price: 100 },
         { id: 2, name: 'Снайперська гвинтівка', damage: 4, price: 250 },
       ],
-      knivesForSale: [
-        { id: 1, name: 'Мисливський ніж', suitableFor: 'великі птахи', price: 50 },
-        { id: 2, name: 'Філейний ніж', suitableFor: 'малі птахи', price: 30 },
+      ammoTypes: [
+        { weaponId: 1, label: 'Патрони до рушниці (10 шт)', amount: 10, price: 10 },
+        { weaponId: 2, label: 'Патрони до снайперки (5 шт)', amount: 5, price: 20 },
       ],
     };
   },
   methods: {
-    buyItem(item, type) {
-      const coins = Number(localStorage.getItem('coins') || 0);
-      if (coins < item.price) return alert('Недостатньо коштів!');
-      localStorage.setItem('coins', coins - item.price);
-
-      const list = JSON.parse(localStorage.getItem(type) || '[]');
-      list.push(item);
-      localStorage.setItem(type, JSON.stringify(list));
-
-      window.dispatchEvent(new Event('coins-updated'));
-      alert(`Куплено: ${item.name} за ${item.price}₴`);
+    buyItem(item) {
+      let coins = Number(localStorage.getItem('coins') || 0);
+      if (coins >= item.price) {
+        coins -= item.price;
+        localStorage.setItem('coins', coins);
+        const weapons = JSON.parse(localStorage.getItem('weapons') || '[]');
+        weapons.push(item);
+        localStorage.setItem('weapons', JSON.stringify(weapons));
+        window.dispatchEvent(new Event('coins-updated'));
+        alert(`Куплено: ${item.name}`);
+      } else {
+        alert('Недостатньо коштів!');
+      }
     },
-    buyAmmo() {
-      const coins = Number(localStorage.getItem('coins') || 0);
-      if (coins < 10) return alert('Недостатньо коштів!');
-      localStorage.setItem('coins', coins - 10);
+    buyAmmo(weaponId, amount, price) {
+      let coins = Number(localStorage.getItem('coins') || 0);
+      if (coins >= price) {
+        coins -= price;
+        localStorage.setItem('coins', coins);
 
-      let ammo = Number(localStorage.getItem('ammo') || 0);
-      ammo += 10;
-      localStorage.setItem('ammo', ammo);
+        let allAmmo = localStorage.getItem('ammo');
+        try {
+          allAmmo = JSON.parse(allAmmo);
+          if (typeof allAmmo !== 'object' || allAmmo === null || Array.isArray(allAmmo)) {
+            allAmmo = {};
+          }
+        } catch (e) {
+          allAmmo = {};
+        }
 
-      window.dispatchEvent(new Event('coins-updated'));
-      alert('Куплено 10 патронів за 10₴');
+        if (!allAmmo[weaponId]) allAmmo[weaponId] = 0;
+        allAmmo[weaponId] += amount;
+
+        localStorage.setItem('ammo', JSON.stringify(allAmmo));
+        window.dispatchEvent(new Event('coins-updated'));
+        alert(`Куплено ${amount} патронів.`);
+      } else {
+        alert('Недостатньо коштів!');
+      }
     },
   },
 };
 </script>
-
 
 <style scoped>
 .shop-page {

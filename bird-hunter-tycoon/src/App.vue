@@ -9,9 +9,10 @@
         <router-link to="/inventory">🎒 Інвентар</router-link>
         <router-link to="/market">💰 Ринок</router-link>
       </nav>
-      <div class="wallet">💵 {{ coins }} монет</div>
+      <div class="info-box">
+        💵 {{ coins }}₴ | 🔫 {{ ammoDisplay }}
+      </div>
     </header>
-
     <router-view />
   </div>
 </template>
@@ -22,18 +23,27 @@ export default {
   data() {
     return {
       coins: 0,
+      ammo: {},
     };
   },
+  computed: {
+    ammoDisplay() {
+      return Object.entries(this.ammo)
+        .map(([type, amount]) => `${amount}x ${type}`)
+        .join(', ');
+    },
+  },
   mounted() {
-    this.coins = Number(localStorage.getItem('coins') || 0);
-    window.addEventListener('coins-updated', this.updateCoins);
+    this.updateData();
+    window.addEventListener('storage', this.updateData);
   },
   beforeUnmount() {
-    window.removeEventListener('coins-updated', this.updateCoins);
+    window.removeEventListener('storage', this.updateData);
   },
   methods: {
-    updateCoins() {
+    updateData() {
       this.coins = Number(localStorage.getItem('coins') || 0);
+      this.ammo = JSON.parse(localStorage.getItem('ammo') || '{}');
     },
   },
 };
@@ -70,7 +80,7 @@ export default {
 .nav a:hover {
   background: #3b82f6;
 }
-.wallet {
+.info-box {
   background: #10b981;
   padding: 6px 12px;
   border-radius: 5px;

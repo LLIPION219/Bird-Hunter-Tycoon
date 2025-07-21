@@ -1,7 +1,7 @@
 <template>
   <div class="inventory-page">
     <h2 class="page-title">🎒 Інвентар</h2>
-    <p class="subtitle">Переглянь свою зброю, ножі, шкури і активуй спорядження.</p>
+    <p class="subtitle">Озброюйся та вирушай на полювання!</p>
 
     <div class="inventory-section">
       <h3>🔫 Зброя</h3>
@@ -9,22 +9,22 @@
         <div class="item-card" v-for="weapon in weapons" :key="weapon.id">
           <h4>{{ weapon.name }}</h4>
           <p>Пошкодження: {{ weapon.damage }}</p>
+          <p v-if="weapon.infiniteAmmo">♾️ Безкінечні патрони</p>
+          <p v-else>Патрони: {{ ammo[weapon.ammoType] || 0 }}</p>
           <button @click="equipWeapon(weapon.id)">
             {{ activeWeaponId === weapon.id ? '✅ Активовано' : 'Взяти' }}
           </button>
+          <button v-if="weapon.price > 0" @click="sellWeapon(weapon.id)">💰 Продати</button>
         </div>
       </div>
     </div>
 
     <div class="inventory-section">
-      <h3>🔪 Ножі</h3>
+      <h3>🎯 Патрони</h3>
       <div class="items-grid">
-        <div class="item-card" v-for="knife in knives" :key="knife.id">
-          <h4>{{ knife.name }}</h4>
-          <p>Підходить для: {{ knife.suitableFor }}</p>
-          <button @click="equipKnife(knife.id)">
-            {{ activeKnifeId === knife.id ? '✅ Активовано' : 'Взяти' }}
-          </button>
+        <div class="item-card" v-for="(amount, type) in ammo" :key="type">
+          <h4>{{ type }}</h4>
+          <p>Кількість: {{ amount }}</p>
         </div>
       </div>
     </div>
@@ -47,21 +47,52 @@ export default {
   name: 'InventoryPage',
   data() {
     return {
-      weapons: JSON.parse(localStorage.getItem('weapons') || '[]'),
-      knives: JSON.parse(localStorage.getItem('knives') || '[]'),
-      birds: JSON.parse(localStorage.getItem('birds') || '[]'),
-      activeWeaponId: Number(localStorage.getItem('activeWeaponId') || -1),
-      activeKnifeId: Number(localStorage.getItem('activeKnifeId') || -1),
+      weapons: [],
+      birds: [],
+      ammo: {},
+      activeWeaponId: null,
+      defaultWeapon: {
+        id: 0,
+        name: 'Рогатка',
+        damage: 1,
+        infiniteAmmo: true,
+        price: 0,
+        ammoType: null,
+      },
     };
   },
   methods: {
-    equipWeapon(id) {
-      localStorage.setItem('activeWeaponId', id);
-      this.activeWeaponId = id;
+    loadData() {
+      this.weapons = JSON.parse(localStorage.getItem('weapons') || '[]');
+      this.birds = JSON.parse(localStorage.getItem('birds') || '[]');
+      this.ammo = JSON.parse(localStorage.getItem('ammo') || '{}');
+      this.activeWeaponId = Number(localStorage.getItem('activeWeaponId') || 0);
+
+      if (!this.weapons.some(w => w.id === this.defaultWeapon.id)) {
+        this.weapons.unshift(this.defaultWeapon);
+        localStorage.setItem('weapons', JSON.stringify(this.weapons));
+      }
     },
-    equipKnife(id) {
-      localStorage.setItem('activeKnifeId', id);
-      this.activeKnifeId = id;
+    equipWeapon(id) {
+      this.activeWeaponId = id;
+      localStorage.setItem('activeWeaponId', id);
+    },
+    sellWeapon(id) {
+      const weapon = this.weapons.find(w => w.id === id);
+      if (!weapon || weapon.price <= 0) return;
+
+      const money = Number(localStorage.getItem('money') || '0');
+      const updatedMoney = money + Math.floor(weapon.price / 2);
+      localStorage.setItem('money', updatedMoney);
+
+      this.weapons = this.weapons.filter(w => w.id !== id);
+      if (this.activeWeaponId === id) {
+        this.activeWeaponId = 0;
+        localStorage.setItem('activeWeaponId', 0);
+      }
+
+      localStorage.setItem('weapons', JSON.stringify(this.weapons));
+      alert(`Продано ${weapon.name} за ${Math.floor(weapon.price / 2)} монет`);
     },
     skinBird(index) {
       const bird = this.birds[index];
@@ -83,6 +114,9 @@ export default {
       localStorage.setItem('pelts', JSON.stringify(pelts));
       alert(`Знято шкуру з ${bird.type}`);
     },
+  },
+  mounted() {
+    this.loadData();
   },
 };
 </script>
