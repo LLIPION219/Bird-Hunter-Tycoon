@@ -10,7 +10,7 @@
         <router-link to="/market">💰 Ринок</router-link>
       </nav>
       <div class="info-box">
-        💵 {{ coins }}₴ | 🔫 {{ ammoDisplay }}
+        💵 {{ coins }}₴ 
       </div>
     </header>
     <router-view />
@@ -28,7 +28,9 @@ export default {
   },
   computed: {
     ammoDisplay() {
-      return Object.entries(this.ammo)
+      const ammoEntries = Object.entries(this.ammo);
+      if (ammoEntries.length === 0) return 'Немає патронів';
+      return ammoEntries
         .map(([type, amount]) => `${amount}x ${type}`)
         .join(', ');
     },
@@ -36,6 +38,7 @@ export default {
   mounted() {
     this.updateData();
     window.addEventListener('storage', this.updateData);
+    setInterval(this.updateData, 1000); // Автоматичне оновлення
   },
   beforeUnmount() {
     window.removeEventListener('storage', this.updateData);
@@ -52,19 +55,38 @@ export default {
 <style scoped>
 #app {
   font-family: 'Segoe UI', sans-serif;
-  background-color: #f3f4f6;
-  color: #333;
   min-height: 100vh;
+  color: #333;
+  background: linear-gradient(135deg, #cfe9f1, #a0d2eb, #c5e3bf);
+  background-size: 400% 400%;
+  animation: gradientMove 15s ease infinite;
 }
+
+/* Плавна анімація неба */
+@keyframes gradientMove {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
 .header {
-  background: #1e3a8a;
-  color: white;
+  background: rgba(30, 58, 138, 0.9);
+  color: rgb(231, 241, 255);
   padding: 15px 20px;
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
+  border-bottom: 2px solid #2563eb;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
+
 .nav {
   display: flex;
   gap: 10px;
@@ -76,14 +98,19 @@ export default {
   padding: 6px 12px;
   background: #2563eb;
   border-radius: 5px;
+  transition: background 0.3s, transform 0.2s;
 }
 .nav a:hover {
   background: #3b82f6;
+  transform: scale(1.05);
 }
+
 .info-box {
   background: #10b981;
   padding: 6px 12px;
   border-radius: 5px;
   font-weight: bold;
+  color: white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
 }
 </style>

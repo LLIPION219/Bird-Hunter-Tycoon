@@ -1,6 +1,6 @@
 <template>
   <div class="hunt-container">
-    <canvas ref="canvas" class="hunt-canvas" @click="shoot" />
+    <canvas ref="canvas" class="hunt-canvas" @click="shoot"></canvas>
   </div>
 </template>
 
@@ -15,8 +15,6 @@ export default {
     let animationFrameId = null;
 
     const birds = [];
-
-    // Unicode пташки
     const birdEmojis = ['🐦', '🥙', '🦆'];
 
     class Bird {
@@ -61,27 +59,7 @@ export default {
       }
     }
 
-    function animate() {
-      ctx.clearRect(0, 0, canvas.value.width, canvas.value.height);
-      birds.forEach((bird) => {
-        bird.update();
-        bird.draw(ctx);
-      });
-      animationFrameId = requestAnimationFrame(animate);
-    }
-
     function shoot(event) {
-      let ammo = Number(localStorage.getItem('ammo') || '0');
-      if (ammo <= 0) {
-        alert('У вас немає патронів! Купіть їх у магазині.');
-        return;
-      }
-
-      // Витрати патронів
-      ammo -= 1;
-      localStorage.setItem('ammo', ammo);
-      window.dispatchEvent(new Event('ammo-updated'));
-
       const rect = canvas.value.getBoundingClientRect();
       const mx = event.clientX - rect.left;
       const my = event.clientY - rect.top;
@@ -106,12 +84,6 @@ export default {
     }
 
     onMounted(() => {
-      const ammo = Number(localStorage.getItem('ammo') || '0');
-      if (ammo <= 0) {
-        alert('У вас немає патронів для полювання!');
-        return;
-      }
-
       canvas.value.width = window.innerWidth;
       canvas.value.height = window.innerHeight * 0.8;
       ctx = canvas.value.getContext('2d');
@@ -124,6 +96,15 @@ export default {
         canvas.value.height = window.innerHeight * 0.8;
       });
     });
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.value.width, canvas.value.height);
+      birds.forEach((bird) => {
+        bird.update();
+        bird.draw(ctx);
+      });
+      animationFrameId = requestAnimationFrame(animate);
+    }
 
     onBeforeUnmount(() => {
       cancelAnimationFrame(animationFrameId);
@@ -139,20 +120,20 @@ export default {
 
 <style scoped>
 .hunt-container {
-  position: relative;
   width: 100%;
   height: 80vh;
   background: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?fit=crop&w=1920&q=80') center/cover no-repeat;
+  border-radius: 16px;
   overflow: hidden;
   user-select: none;
   cursor: crosshair;
-  border-radius: 12px;
-  box-shadow: 0 0 20px rgba(30, 58, 138, 0.7);
+  box-shadow: 0 0 30px rgba(30, 58, 138, 0.5);
 }
 
 .hunt-canvas {
   display: block;
   width: 100%;
   height: 100%;
+  background: transparent;
 }
 </style>
