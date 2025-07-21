@@ -6,7 +6,7 @@
     <div class="inventory-section">
       <h3>🔫 Зброя</h3>
       <div class="items-grid">
-        <!-- Ітеруємося по відфільтрованому масиву -->
+  
         <div
           class="item-card"
           v-for="weapon in filteredWeapons"

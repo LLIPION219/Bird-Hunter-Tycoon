@@ -38,7 +38,7 @@ export default {
   mounted() {
     this.updateData();
     window.addEventListener('storage', this.updateData);
-    setInterval(this.updateData, 1000); // Автоматичне оновлення
+    setInterval(this.updateData, 1000); 
   },
   beforeUnmount() {
     window.removeEventListener('storage', this.updateData);
@@ -62,7 +62,7 @@ export default {
   animation: gradientMove 15s ease infinite;
 }
 
-/* Плавна анімація неба */
+
 @keyframes gradientMove {
   0% {
     background-position: 0% 50%;

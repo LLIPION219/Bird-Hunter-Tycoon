@@ -15,7 +15,7 @@ export default {
     let animationFrameId = null;
 
     const birds = [];
-    const birdEmojis = ['🐦', '🥙', '🦆'];
+    const birdEmojis = ['🐦', '🦢', '🦆'];
 
     class Bird {
       constructor(emoji) {
@@ -74,7 +74,7 @@ export default {
             pelts.push({ type: 'Голуб', quality: 'Висока', price: 25 });
           } else if (bird.emoji === '🦆') {
             pelts.push({ type: 'Качка', quality: 'Середня', price: 15 });
-          } else {
+          } else if (bird.emoji === '🦢') {
             pelts.push({ type: 'Лебідь', quality: 'Висока', price: 30 });
           }
 
